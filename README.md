@@ -1,8 +1,17 @@
 # Covid-Data
 
-Six COVID-19 indicator signals for all 50 US states and DC, June 2020 to March 2022,
-collected from the [Delphi Epidata API](https://cmu-delphi.github.io/delphi-epidata/)
-at Carnegie Mellon University.
+**Pandemic Signal Detective: [haile-teshome.github.io/Covid-Data](https://haile-teshome.github.io/Covid-Data/)**
+
+A classroom activity about which kind of data warns us first when a wave of disease
+starts. Four interactive activities and six quiz questions, built on six COVID-19
+indicator signals for all 50 US states and DC, June 2020 to March 2022, collected from
+the [Delphi Epidata API](https://cmu-delphi.github.io/delphi-epidata/) at Carnegie Mellon
+University.
+
+Nothing to install and no sign-in. Students open the link and work down the page.
+
+`pandemic_signal_detective.ipynb` is the same four activities as a Google Colab notebook,
+for anyone who wants to see the Python behind them.
 
 This file exists so that a classroom can load the data in one download. The Delphi
 API allows only 60 requests per hour per internet address, and a school network

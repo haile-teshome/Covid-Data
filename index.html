@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pandemic Signal Detective</title>
+<meta name="description" content="Which kind of data warns us first? Real COVID data from every US state, June 2020 to March 2022.">
+<style>
+  :root {
+    color-scheme: light;
+    --surface:        #fcfcfb;
+    --surface-sunk:   #f3f2ef;
+    --rule:           #e2e1dc;
+    --rule-strong:    #c9c8c2;
+    --text:           #1b1b19;
+    --text-soft:      #52514e;
+    --text-faint:     #7a7975;
+    --accent:         #1c5cab;
+    --good-bg:        #eaf6f2;
+    --good-line:      #1f8a70;
+    --good-text:      #15614f;
+    --warn-bg:        #fdf6e3;
+    --warn-line:      #d9a406;
+    --warn-text:      #8a6a08;
+    --s1: #2a78d6;  --s2: #eb6834;  --s3: #1baf7a;
+    --s4: #eda100;  --s5: #e87ba4;  --s-ref: #52514e;
+    --radius: 8px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      color-scheme: dark;
+      --surface:      #1a1a19;
+      --surface-sunk: #232321;
+      --rule:         #35352f;
+      --rule-strong:  #4c4c45;
+      --text:         #f2f1ec;
+      --text-soft:    #c3c2b7;
+      --text-faint:   #8e8d84;
+      --accent:       #6da7ec;
+      --good-bg:      #16271f;
+      --good-line:    #199e70;
+      --good-text:    #7fd4b4;
+      --warn-bg:      #2a2416;
+      --warn-line:    #c98500;
+      --warn-text:    #e3bb5c;
+      --s1: #3987e5;  --s2: #d95926;  --s3: #199e70;
+      --s4: #c98500;  --s5: #d55181;  --s-ref: #a8a79c;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--surface);
+    color: var(--text);
+    font: 17px/1.6 ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI",
+          Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 0 20px; }
+  header { padding: 64px 0 36px; border-bottom: 1px solid var(--rule); }
+  h1 { font-size: clamp(32px, 6vw, 46px); line-height: 1.1; margin: 0 0 10px;
+       letter-spacing: -0.02em; font-weight: 650; }
+  .standfirst { font-size: clamp(18px, 2.6vw, 22px); color: var(--text-soft);
+                margin: 0 0 24px; font-weight: 400; }
+  header p { max-width: 64ch; color: var(--text-soft); margin: 0 0 14px; }
+  .chain { font-size: 15px; color: var(--text-faint); margin: 18px 0 0;
+           padding-left: 14px; border-left: 2px solid var(--rule-strong); }
+  section { padding: 52px 0; border-bottom: 1px solid var(--rule); }
+  h2 { font-size: clamp(23px, 3.4vw, 29px); margin: 0 0 12px; font-weight: 620;
+       letter-spacing: -0.015em; }
+  h2 .num { color: var(--text-faint); font-weight: 450; margin-right: 10px; }
+  section > p { max-width: 64ch; color: var(--text-soft); margin: 0 0 8px; }
+
+  .controls { display: flex; flex-wrap: wrap; gap: 18px 26px; align-items: flex-end;
+              margin: 26px 0 8px; padding: 16px 18px; background: var(--surface-sunk);
+              border-radius: var(--radius); }
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field label, .legend-label { font-size: 13px; font-weight: 580; color: var(--text-soft);
+                                letter-spacing: 0.01em; }
+  select {
+    font: inherit; font-size: 15px; padding: 7px 30px 7px 10px; color: var(--text);
+    background: var(--surface); border: 1px solid var(--rule-strong);
+    border-radius: var(--radius); min-width: 170px; appearance: none;
+    background-image: linear-gradient(45deg, transparent 50%, var(--text-soft) 50%),
+                      linear-gradient(135deg, var(--text-soft) 50%, transparent 50%);
+    background-position: calc(100% - 16px) 51%, calc(100% - 11px) 51%;
+    background-size: 5px 5px, 5px 5px; background-repeat: no-repeat;
+  }
+  select:focus-visible, input:focus-visible, button:focus-visible {
+    outline: 2px solid var(--accent); outline-offset: 2px;
+  }
+  fieldset { border: 0; margin: 0; padding: 0; }
+  .checks { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 6px; }
+  .checks label { display: inline-flex; align-items: center; gap: 6px; font-size: 15px;
+                  color: var(--text); cursor: pointer; }
+  .checks input { accent-color: var(--accent); width: 16px; height: 16px; }
+  .swatch { width: 11px; height: 11px; border-radius: 3px; flex: none; }
+  input[type=range] { width: 190px; accent-color: var(--accent); }
+  .rangerow { display: flex; align-items: center; gap: 10px; }
+  .rangeval { font-variant-numeric: tabular-nums; font-size: 15px; font-weight: 580;
+              min-width: 60px; }
+  button.play { font: inherit; font-size: 14px; padding: 7px 14px; cursor: pointer;
+                color: var(--text); background: var(--surface);
+                border: 1px solid var(--rule-strong); border-radius: var(--radius); }
+  button.play:active { transform: translateY(1px); }
+
+  .chart { width: 100%; min-height: 300px; margin-top: 10px; }
+  .note { padding: 11px 15px; border-radius: var(--radius); margin: 14px 0;
+          font-size: 15.5px; border-left: 4px solid var(--accent);
+          background: var(--surface-sunk); }
+  .note.good { background: var(--good-bg); border-left-color: var(--good-line); }
+  .note.warn { background: var(--warn-bg); border-left-color: var(--warn-line); }
+  .note b { font-weight: 640; }
+
+  table { border-collapse: collapse; width: 100%; margin: 16px 0 0; font-size: 15px; }
+  caption { text-align: left; font-size: 13px; font-weight: 580; color: var(--text-soft);
+            padding-bottom: 7px; }
+  th { text-align: left; font-weight: 580; color: var(--text-soft); font-size: 13px;
+       padding: 7px 10px; border-bottom: 1px solid var(--rule-strong); }
+  td { padding: 7px 10px; border-bottom: 1px solid var(--rule); }
+  td.num { font-variant-numeric: tabular-nums; }
+  .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%;
+         margin-right: 8px; vertical-align: baseline; }
+  .scroller { overflow-x: auto; }
+
+  .quiz { margin-top: 30px; padding: 20px 22px; background: var(--surface-sunk);
+          border-radius: var(--radius); }
+  .quiz h3 { font-size: 14px; margin: 0 0 16px; color: var(--text-soft);
+             font-weight: 600; letter-spacing: 0.02em; text-transform: uppercase; }
+  .q + .q { margin-top: 22px; padding-top: 20px; border-top: 1px solid var(--rule); }
+  .q p { margin: 0 0 10px; font-weight: 560; }
+  .opts { display: flex; flex-direction: column; gap: 8px; }
+  .opts label { display: flex; gap: 9px; align-items: flex-start; cursor: pointer;
+                font-size: 15.5px; color: var(--text-soft); line-height: 1.45; }
+  .opts input { accent-color: var(--accent); margin-top: 3px; flex: none;
+                width: 16px; height: 16px; }
+  .opts label:hover { color: var(--text); }
+  .verdict { margin-top: 12px; font-size: 15.5px; padding: 10px 14px;
+             border-radius: var(--radius); border-left: 4px solid; }
+  .verdict.right { background: var(--good-bg); border-color: var(--good-line); }
+  .verdict.wrong { background: var(--warn-bg); border-color: var(--warn-line); }
+  .verdict b { font-weight: 640; }
+  .verdict.right b { color: var(--good-text); }
+  .verdict.wrong b { color: var(--warn-text); }
+
+  .closing ol { max-width: 64ch; color: var(--text-soft); padding-left: 22px; }
+  .closing li { margin-bottom: 14px; }
+  .closing li b { color: var(--text); font-weight: 600; }
+  footer { padding: 34px 0 60px; font-size: 14px; color: var(--text-faint); }
+  footer a { color: var(--text-soft); }
+  a { color: var(--accent); }
+  .loading { padding: 40px 0; color: var(--text-faint); }
+  @media (max-width: 640px) {
+    body { font-size: 16px; }
+    .controls { flex-direction: column; align-items: stretch; gap: 14px; }
+    select, input[type=range] { width: 100%; min-width: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>Pandemic Signal Detective</h1>
+  <p class="standfirst">Which kind of data warns us first?</p>
+  <p>When a wave of disease starts, nobody announces it. You have to spot it in the data.
+     Six different sources were tracking the same pandemic, and each one catches a person
+     at a different stage of getting sick.</p>
+  <p class="chain">infected, then Google your symptoms, then tell a survey you feel sick,
+     then see a doctor, then test positive, then go to hospital, and some people die</p>
+  <p style="margin-top:18px">So some of them should move earlier than others. These are real
+     numbers from every US state between June 2020 and March 2022. Find out which signal
+     warns us first, then build an alarm with it.</p>
+</header>
+
+<div id="loading" class="loading">Loading the data...</div>
+
+<main id="main" hidden>
+
+<section id="a1">
+  <h2><span class="num">1</span>Which signal moves first?</h2>
+  <p>Each line is scaled to a share of its own peak, so six different units fit on one
+     chart. The star marks that signal's takeoff: the first day it got halfway to its peak.</p>
+  <p>Start with your own state, then check whether the same signal wins in another wave.</p>
+  <div class="controls">
+    <div class="field"><label for="a1-state">State</label>
+      <select id="a1-state"></select></div>
+    <div class="field"><label for="a1-wave">Wave</label>
+      <select id="a1-wave"></select></div>
+    <fieldset class="field"><legend class="legend-label">Signals</legend>
+      <div class="checks" id="a1-sigs"></div></fieldset>
+  </div>
+  <div id="a1-chart" class="chart"></div>
+  <div id="a1-note"></div>
+  <div class="scroller"><table id="a1-table"></table></div>
+  <div class="quiz">
+    <h3>Check yourself</h3>
+    <div class="q" data-q="star">
+      <p>The star on each line marks</p>
+      <div class="opts"></div><div class="verdict" hidden></div>
+    </div>
+    <div class="q" data-q="deathsLast">
+      <p>Deaths is almost always the last line to take off. Why?</p>
+      <div class="opts"></div><div class="verdict" hidden></div>
+    </div>
+  </div>
+</section>
+
+<section id="a2">
+  <h2><span class="num">2</span>Does it hold up everywhere?</h2>
+  <p>One state could be luck, so this runs the same comparison on all 50 states and DC.
+     For each one we slide a signal backwards and forwards in time until it best matches
+     that state's case curve. How far we had to slide it is its warning time.</p>
+  <p>Each dot is a state. Dots right of the zero line warned early. Dots left of it moved
+     after cases.</p>
+  <div class="controls">
+    <div class="field"><label for="a2-wave">Wave</label>
+      <select id="a2-wave"></select></div>
+  </div>
+  <div id="a2-chart" class="chart"></div>
+  <div id="a2-note"></div>
+  <div class="scroller"><table id="a2-table"></table></div>
+  <div class="quiz">
+    <h3>Check yourself</h3>
+    <div class="q" data-q="mostWarning">
+      <p>Which signal gave the most warning?</p>
+      <div class="opts"></div><div class="verdict" hidden></div>
+    </div>
+    <div class="q" data-q="negLead">
+      <p>A signal with a warning time of -15 days is one where</p>
+      <div class="opts"></div><div class="verdict" hidden></div>
+    </div>
+  </div>
+</section>
+
+<section id="a3">
+  <h2><span class="num">3</span>Watch a wave cross the country</h2>
+  <p>Drag the slider or press play. Try an early signal, then a late one, and watch which
+     lights up first.</p>
+  <div class="controls">
+    <div class="field"><label for="a3-sig">Signal</label>
+      <select id="a3-sig"></select></div>
+    <div class="field"><label for="a3-wave">Wave</label>
+      <select id="a3-wave"></select></div>
+    <div class="field"><label for="a3-week">Week</label>
+      <div class="rangerow">
+        <input type="range" id="a3-week" min="0" max="10" value="0">
+        <span class="rangeval" id="a3-weeklabel"></span>
+        <button class="play" id="a3-play" type="button">Play</button>
+      </div>
+    </div>
+  </div>
+  <div id="a3-chart" class="chart"></div>
+  <div id="a3-note"></div>
+</section>
+
+<section id="a4">
+  <h2><span class="num">4</span>Build an alarm</h2>
+  <p>Now make something useful out of it. Your alarm watches the signals you tick and goes
+     off when they climb far enough above where they started and stay there.</p>
+  <p>Two dials. <b>Level</b> is how big a jump you demand. <b>Days in a row</b> is how long
+     it has to last before you believe it. Loose settings ring early but cry wolf. Strict
+     settings are trustworthy but slow. No setting wins on both, which is the whole problem.</p>
+  <div class="controls">
+    <div class="field"><label for="a4-state">State</label>
+      <select id="a4-state"></select></div>
+    <div class="field"><label for="a4-wave">Wave</label>
+      <select id="a4-wave"></select></div>
+    <fieldset class="field"><legend class="legend-label">Alarm watches</legend>
+      <div class="checks" id="a4-sigs"></div></fieldset>
+    <div class="field"><label for="a4-level">Level</label>
+      <div class="rangerow">
+        <input type="range" id="a4-level" min="1.1" max="4" step="0.1" value="1.5">
+        <span class="rangeval" id="a4-levelval"></span>
+      </div></div>
+    <div class="field"><label for="a4-days">Days in a row</label>
+      <div class="rangerow">
+        <input type="range" id="a4-days" min="1" max="10" step="1" value="3">
+        <span class="rangeval" id="a4-daysval"></span>
+      </div></div>
+  </div>
+  <div id="a4-chart" class="chart"></div>
+  <div id="a4-note"></div>
+  <div class="scroller"><table id="a4-table"></table></div>
+  <div class="quiz">
+    <h3>Check yourself</h3>
+    <div class="q" data-q="raiseLevel">
+      <p>You raise the level from 1.5 to 3.0. What happens to your alarm?</p>
+      <div class="opts"></div><div class="verdict" hidden></div>
+    </div>
+    <div class="q" data-q="claimsDelay">
+      <p>Doctor visits won on this data. Why might you still not trust it in a real outbreak?</p>
+      <div class="opts"></div><div class="verdict" hidden></div>
+    </div>
+  </div>
+</section>
+
+<section class="closing">
+  <h2>Worth arguing about</h2>
+  <ol>
+    <li><b>Searches has no data at all for eight states</b>, and the survey only reached
+        people on Facebook. Cases only counted people who got a test. Whose illness does
+        each source miss?</li>
+    <li><b>In 2013 Google Flu Trends badly overshot</b>, partly because news coverage sent
+        healthy people searching for symptoms. Which of these six signals could break the
+        same way, and when?</li>
+    <li><b>This data came from millions of people's searches, surveys and medical records</b>,
+        anonymised and pooled. What would you want to be true before your own data was used
+        this way?</li>
+  </ol>
+</section>
+
+<footer>
+  <p>Data from the <a href="https://cmu-delphi.github.io/delphi-epidata/">Delphi Epidata API</a>
+     at Carnegie Mellon, which gathered these signals from Google, Facebook, health systems,
+     Johns Hopkins and the US Department of Health and Human Services.
+     The assembled file and a Colab notebook version are in
+     <a href="https://github.com/haile-teshome/Covid-Data">the repository</a>.</p>
+  <p>Blank means no data reported, not zero. The searches signal is missing for Alaska, DC,
+     Delaware, Montana, North Dakota, South Dakota, Vermont and Wyoming, and stops in
+     January 2022.</p>
+</footer>
+
+</main>
+</div>
+
+<script src="https://cdn.plot.ly/plotly-geo-3.0.1.min.js" charset="utf-8"></script>
+<script src="analysis.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
