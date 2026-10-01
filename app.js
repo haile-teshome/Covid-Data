@@ -530,7 +530,7 @@ function buildQuiz(containerId, setName) {
   var at = 0;
 
   host.innerHTML =
-    '<div class="quizhead"><span class="quiztitle">Check yourself</span>' +
+    '<div class="quizhead"><span class="quiztitle">Check your understanding</span>' +
     '<span class="quizcount"></span></div>' +
     '<div class="quizbar"><i></i></div>' +
     '<div class="qstage"><div class="qcard"></div></div>' +
