@@ -408,62 +408,213 @@ function drawA4() {
 }
 
 /* ---------- quizzes ---------- */
-var QUIZ = {
-  star: { options: ["the day the signal peaked",
-                    "the first day it climbed halfway to its peak",
-                    "the day the wave ended"],
-          answer: 1,
-          why: "That is the takeoff, the point where a signal is clearly on its way up.",
-          hint: "Look at where the stars sit on each line. Are they at the top, or partway up?" },
-  deathsLast: { options: ["deaths reflect infections from weeks earlier",
-                          "death records are more accurate than the others",
-                          "fewer people died than caught COVID"],
-          answer: 0,
-          why: "People who die were infected weeks before, so deaths report on a wave that has already happened.",
-          hint: "Think about how long it takes between catching COVID and dying of it." },
-  mostWarning: { options: ["Searches", "Survey", "Doctor visits", "Hospital"],
-          answer: 2,
-          why: "Doctor visits had the longest median lead in every wave, 5 to 12 days ahead of cases.",
-          hint: "Read the chart from top to bottom. Which signal sits furthest to the right?" },
-  negLead: { options: ["it moves about two weeks after cases",
-                       "it warns us 15 days early",
-                       "the data is missing"],
-          answer: 0,
-          why: "A negative warning time means the signal follows cases instead of warning about them.",
-          hint: "The zero line is the moment cases move. What does sitting to the left of it mean?" },
-  raiseLevel: { options: ["it rings later, and in some states not at all",
-                          "it rings earlier in every state",
-                          "nothing changes"],
-          answer: 0,
-          why: "A stricter alarm waits for a bigger jump, so it fires late or misses the wave entirely. Being sure and being early pull against each other.",
-          hint: "Try it. Drag the level to 3.0 and watch the 'never rang' row in the table." },
-  claimsDelay: { options: ["insurance claims take days or weeks to reach anyone who could act",
-                           "doctors are bad at spotting COVID",
-                           "there is not enough data"],
-          answer: 0,
-          why: "A signal is only as early as the moment it reaches you. The dates here are when people visited, not when the paperwork landed.",
-          hint: "This data is filed by the date of the visit. When does the insurance claim actually get processed?" }
+/* One question at a time. Every answer below was checked against the data
+   before it was written down. */
+var QUIZ_SETS = {
+  a1: [
+    { ask: "The star on each line marks",
+      options: ["the day the signal peaked",
+                "the first day it climbed halfway to its peak",
+                "the day the wave ended"],
+      answer: 1,
+      why: "That is the takeoff, the point where a signal is clearly on its way up rather than just wobbling.",
+      hint: "Look at where the stars sit on each line. Are they at the very top, or partway up?" },
+    { ask: "Why is every line scaled to a share of its own peak?",
+      options: ["so signals measured in completely different units can share one chart",
+                "because some of the data is missing",
+                "to make the lines look smoother"],
+      answer: 0,
+      why: "Searches, percentages and deaths per 100,000 have nothing in common as numbers. Scaling each to its own peak compares their shape and timing instead of their size.",
+      hint: "Compare the units: one is a search count, one is a percentage, one is deaths per 100,000." },
+    { ask: "Deaths is almost always the last line to take off. Why?",
+      options: ["deaths reflect infections from weeks earlier",
+                "death records are more accurate than the others",
+                "fewer people died than caught COVID"],
+      answer: 0,
+      why: "People who die were infected weeks before, so deaths report on a wave that has already happened.",
+      hint: "Think about how much time passes between catching COVID and dying of it." },
+    { ask: "Searches has no line at all for Alaska. What does that blank mean?",
+      options: ["no number was published for Alaska, which is not the same as zero",
+                "nobody in Alaska searched for those symptoms",
+                "Alaska had no COVID that year"],
+      answer: 0,
+      why: "Google withholds counts that are too small to publish safely. Eight states are blank for this reason. A gap in the data is not a measurement of zero.",
+      hint: "A missing number and a number that equals zero are two very different claims." },
+    { ask: "Survey and doctor visits often take off before cases. In plain terms, what does that mean happened?",
+      options: ["people felt ill and sought help before their test was counted",
+                "the tests were wrong",
+                "people were tested before they felt ill"],
+      answer: 0,
+      why: "Feeling sick, answering a survey and going to a doctor all happen before a positive test gets recorded, so those signals move first.",
+      hint: "Put the steps in order: when do you feel ill, and when does a test result get filed?" }
+  ],
+  a2: [
+    { ask: "Which signal gave the most warning?",
+      options: ["Searches", "Survey", "Doctor visits", "Hospital"],
+      answer: 2,
+      why: "Doctor visits had the longest median lead in every wave, 5 to 12 days ahead of cases.",
+      hint: "The rows are sorted. Which one sits highest, furthest to the right?" },
+    { ask: "A signal with a warning time of -15 days is one where",
+      options: ["it moves about two weeks after cases",
+                "it warns us 15 days early",
+                "the data is missing"],
+      answer: 0,
+      why: "A negative warning time means the signal follows cases instead of warning about them.",
+      hint: "The zero line marks the moment cases move. What does sitting to the left of it mean?" },
+    { ask: "The thick black line on each row is",
+      options: ["the median state, the middle of the pack",
+                "the best state",
+                "the national total"],
+      answer: 0,
+      why: "Half the states fall on each side of it. It is a fairer summary than any single state, because a couple of odd states cannot drag it far.",
+      hint: "It sits in the middle of each cloud of dots rather than at an edge." },
+    { ask: "Why run this on all 51 states instead of just one?",
+      options: ["one state could be a coincidence, a pattern across all of them is harder to dismiss",
+                "the chart looks better with more dots",
+                "each state used a different kind of test"],
+      answer: 0,
+      why: "Any single state can produce a striking result by luck. Seeing the same ordering repeat across 51 of them is what makes it a finding.",
+      hint: "Think about what you would say to someone who replied, 'that is just California'." },
+    { ask: "Hospital admissions sit close to the zero line. What does that tell you?",
+      options: ["they move at about the same time as cases, so they give almost no warning",
+                "hospitals were not reporting their numbers",
+                "hospital admissions are the best early warning"],
+      answer: 0,
+      why: "Its median is within a day of zero in every wave. Hospital data is valuable for knowing how bad a wave is, but it arrives too late to warn you one is coming.",
+      hint: "Zero means the signal moves at the same moment cases do. Is that any use as a warning?" }
+  ],
+  a4: [
+    { ask: "You raise the level from 1.5 to 3.0. What happens to your alarm?",
+      options: ["it rings later, and in some states not at all",
+                "it rings earlier in every state",
+                "nothing changes"],
+      answer: 0,
+      why: "A stricter alarm waits for a bigger jump, so it fires late or misses the wave entirely. In the Delta wave it goes from warning in 50 states to missing 16 of them completely.",
+      hint: "Try it. Drag the level to 3.0 and watch the 'never rang' row in the table." },
+    { ask: "What does asking for more days in a row protect you against?",
+      options: ["one odd day of data setting the alarm off by itself",
+                "the signals being measured in different units",
+                "states that report their numbers late"],
+      answer: 0,
+      why: "Requiring a run of days means a single strange reading cannot trigger it. Going from 1 day to 10 in the Delta wave cuts the states where it fires more than six weeks early from 8 down to 2.",
+      hint: "Picture a signal that spikes for exactly one day and then drops back to normal." },
+    { ask: "Set the level to 1.1 and the alarm rings in nearly every state, usually more than a month early. Why is that not automatically a better alarm?",
+      options: ["going off that easily means it would also go off when nothing was happening",
+                "it means the data is broken",
+                "a month of warning is never useful"],
+      answer: 0,
+      why: "At that setting it fires more than six weeks ahead in up to 21 states. An alarm that rings at the slightest movement stops telling you anything, because it is always ringing.",
+      hint: "An alarm is only useful if its silence means something too." },
+    { ask: "Which change makes your alarm more cautious but slower?",
+      options: ["asking for more days in a row",
+                "lowering the level",
+                "watching fewer signals"],
+      answer: 0,
+      why: "More days in a row means more evidence before it commits. In the Delta wave, going from 1 day to 10 drops the typical warning from 26 days to 12, but it stops jumping at noise.",
+      hint: "Which dial asks the signal to prove itself for longer?" },
+    { ask: "Doctor visits won on this data. Why might you still not trust it in a real outbreak?",
+      options: ["insurance claims take days or weeks to reach anyone who could act",
+                "doctors are bad at spotting COVID",
+                "there is not enough data"],
+      answer: 0,
+      why: "A signal is only as early as the moment it reaches you. These records are filed by the date of the visit, not the date anyone could read them.",
+      hint: "This data is arranged by the day people saw a doctor. When does the paperwork actually arrive?" }
+  ]
 };
-function buildQuizzes() {
-  Array.prototype.forEach.call(document.querySelectorAll(".q"), function (q) {
-    var spec = QUIZ[q.dataset.q], opts = q.querySelector(".opts");
-    var verdict = q.querySelector(".verdict");
-    spec.options.forEach(function (text, i) {
-      var lab = document.createElement("label");
-      var r = document.createElement("input");
-      r.type = "radio"; r.name = q.dataset.q; r.value = i;
-      r.addEventListener("change", function () {
-        var right = i === spec.answer;
-        verdict.className = "verdict " + (right ? "right" : "wrong");
-        verdict.innerHTML = right ? "<b>Correct.</b> " + spec.why
-                                  : "<b>Not quite.</b> " + spec.hint;
-        verdict.hidden = false;
-      });
-      lab.appendChild(r);
-      lab.appendChild(document.createTextNode(text));
-      opts.appendChild(lab);
+
+var REDUCED = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+function buildQuiz(containerId, setName) {
+  var host = el(containerId), set = QUIZ_SETS[setName];
+  var picks = new Array(set.length).fill(null);
+  var at = 0;
+
+  host.innerHTML =
+    '<div class="quizhead"><span class="quiztitle">Check yourself</span>' +
+    '<span class="quizcount"></span></div>' +
+    '<div class="quizbar"><i></i></div>' +
+    '<div class="qstage"><div class="qcard"></div></div>' +
+    '<div class="quiznav"><button type="button" class="back">Back</button>' +
+    '<span class="spacer"></span><button type="button" class="next">Next</button></div>';
+
+  var card = host.querySelector(".qcard"), count = host.querySelector(".quizcount");
+  var bar = host.querySelector(".quizbar i");
+  var backBtn = host.querySelector(".back"), nextBtn = host.querySelector(".next");
+
+  function renderQuestion() {
+    var q = set[at], picked = picks[at];
+    var html = '<p class="ask">' + q.ask + '</p><div class="opts">';
+    q.options.forEach(function (text, i) {
+      html += '<label><input type="radio" name="' + setName + "-" + at + '" value="' + i + '"' +
+              (picked === i ? " checked" : "") + ">" + "<span>" + text + "</span></label>";
     });
+    html += "</div>";
+    if (picked !== null) {
+      var right = picked === q.answer;
+      html += '<div class="verdict ' + (right ? "right" : "wrong") + '">' +
+              (right ? "<b>Correct.</b> " + q.why : "<b>Not quite.</b> " + q.hint) + "</div>";
+    }
+    card.innerHTML = html;
+    Array.prototype.forEach.call(card.querySelectorAll("input"), function (r) {
+      r.addEventListener("change", function () {
+        picks[at] = +r.value;
+        renderQuestion();
+        syncChrome();
+      });
+    });
+  }
+
+  function renderScore() {
+    var right = 0;
+    picks.forEach(function (p, i) { if (p === set[i].answer) right++; });
+    var line = right === set.length ? "Every one. You read those charts properly."
+             : right >= set.length - 1 ? "Close to the lot."
+             : right >= Math.ceil(set.length / 2) ? "More than half. Worth another look at the ones you missed."
+             : "Have another go. The answers are all in the chart above.";
+    card.innerHTML = '<div class="scorecard"><p class="big">' + right + " out of " +
+      set.length + '</p><p>' + line + "</p></div>";
+  }
+
+  function syncChrome() {
+    var onScore = at >= set.length;
+    count.textContent = onScore ? "done" : (at + 1) + " of " + set.length;
+    bar.style.width = Math.round((onScore ? set.length : at + 1) / set.length * 100) + "%";
+    backBtn.disabled = at === 0;
+    nextBtn.disabled = !onScore && picks[at] === null;
+    nextBtn.textContent = onScore ? "Start over"
+                        : at === set.length - 1 ? "See result" : "Next";
+  }
+
+  /* fade the card out, swap its contents, fade it back in from the other side */
+  function go(delta) {
+    var leaving = delta > 0 ? "hidden-left" : "hidden-right";
+    var entering = delta > 0 ? "hidden-right" : "hidden-left";
+    var swap = function () {
+      at = (at + delta + set.length + 1) % (set.length + 1);
+      if (at >= set.length) renderScore(); else renderQuestion();
+      syncChrome();
+      card.classList.remove(leaving);
+      card.classList.add(entering);
+      if (REDUCED) { card.classList.remove(entering); return; }
+      requestAnimationFrame(function () {
+        requestAnimationFrame(function () { card.classList.remove(entering); });
+      });
+    };
+    if (REDUCED) { swap(); return; }
+    card.classList.add(leaving);
+    setTimeout(swap, 190);
+  }
+
+  nextBtn.addEventListener("click", function () {
+    if (at >= set.length) {               // start over
+      picks = new Array(set.length).fill(null);
+      go(1);                              // wraps round to the first question
+    } else go(1);
   });
+  backBtn.addEventListener("click", function () { if (at > 0) go(-1); });
+
+  renderQuestion();
+  syncChrome();
 }
 
 /* ---------- wiring ---------- */
@@ -499,7 +650,9 @@ function start(text) {
   ["a4-state","a4-wave"].forEach(function (id) { el(id).addEventListener("change", drawA4); });
   ["a4-level","a4-days"].forEach(function (id) { el(id).addEventListener("input", drawA4); });
 
-  buildQuizzes();
+  buildQuiz("quiz-a1", "a1");
+  buildQuiz("quiz-a2", "a2");
+  buildQuiz("quiz-a4", "a4");
   buildA3Weeks();
   el("loading").hidden = true;
   el("main").hidden = false;

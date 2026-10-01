@@ -123,12 +123,39 @@
          margin-right: 8px; vertical-align: baseline; }
   .scroller { overflow-x: auto; }
 
-  .quiz { margin-top: 30px; padding: 20px 22px; background: var(--surface-sunk);
+  .quiz { margin-top: 30px; padding: 20px 22px 18px; background: var(--surface-sunk);
           border-radius: var(--radius); }
-  .quiz h3 { font-size: 14px; margin: 0 0 16px; color: var(--text-soft);
-             font-weight: 600; letter-spacing: 0.02em; text-transform: uppercase; }
-  .q + .q { margin-top: 22px; padding-top: 20px; border-top: 1px solid var(--rule); }
-  .q p { margin: 0 0 10px; font-weight: 560; }
+  .quizhead { display: flex; justify-content: space-between; align-items: baseline;
+              gap: 12px; margin-bottom: 10px; }
+  .quiztitle { font-size: 13px; color: var(--text-soft); font-weight: 600;
+               letter-spacing: 0.04em; text-transform: uppercase; }
+  .quizcount { font-size: 13px; color: var(--text-faint);
+               font-variant-numeric: tabular-nums; }
+  .quizbar { height: 3px; background: var(--rule); border-radius: 2px; overflow: hidden;
+             margin-bottom: 20px; }
+  .quizbar i { display: block; height: 100%; background: var(--accent);
+               border-radius: 2px; transition: width 0.28s cubic-bezier(0.16,1,0.3,1); }
+  .qstage { min-height: 170px; }
+  .qcard { transition: opacity 0.2s ease, transform 0.2s ease; }
+  .qcard.hidden-left  { opacity: 0; transform: translateX(-14px); }
+  .qcard.hidden-right { opacity: 0; transform: translateX(14px); }
+  .qcard p.ask { margin: 0 0 12px; font-weight: 560; font-size: 17px; }
+  .quiznav { display: flex; gap: 10px; align-items: center; margin-top: 18px;
+             padding-top: 15px; border-top: 1px solid var(--rule); }
+  .quiznav button { font: inherit; font-size: 14.5px; font-weight: 550; padding: 8px 17px;
+                    border-radius: var(--radius); cursor: pointer; border: 1px solid transparent; }
+  .quiznav .next { background: var(--accent); color: #fff; }
+  .quiznav .next:disabled { background: var(--rule); color: var(--text-faint);
+                            cursor: not-allowed; }
+  .quiznav .back { background: transparent; color: var(--text-soft);
+                   border-color: var(--rule-strong); }
+  .quiznav .back:disabled { opacity: 0.4; cursor: not-allowed; }
+  .quiznav button:not(:disabled):active { transform: translateY(1px); }
+  .quiznav .spacer { flex: 1; }
+  .scorecard { text-align: left; padding: 6px 0 2px; }
+  .scorecard .big { font-size: 30px; font-weight: 640; letter-spacing: -0.02em;
+                    margin: 0 0 6px; }
+  .scorecard p { margin: 0 0 16px; color: var(--text-soft); max-width: 46ch; }
   .opts { display: flex; flex-direction: column; gap: 8px; }
   .opts label { display: flex; gap: 9px; align-items: flex-start; cursor: pointer;
                 font-size: 15.5px; color: var(--text-soft); line-height: 1.45; }
@@ -196,17 +223,7 @@
   <div id="a1-chart" class="chart"></div>
   <div id="a1-note"></div>
   <div class="scroller"><table id="a1-table"></table></div>
-  <div class="quiz">
-    <h3>Check yourself</h3>
-    <div class="q" data-q="star">
-      <p>The star on each line marks</p>
-      <div class="opts"></div><div class="verdict" hidden></div>
-    </div>
-    <div class="q" data-q="deathsLast">
-      <p>Deaths is almost always the last line to take off. Why?</p>
-      <div class="opts"></div><div class="verdict" hidden></div>
-    </div>
-  </div>
+  <div class="quiz" id="quiz-a1"></div>
 </section>
 
 <section id="a2">
@@ -223,17 +240,7 @@
   <div id="a2-chart" class="chart"></div>
   <div id="a2-note"></div>
   <div class="scroller"><table id="a2-table"></table></div>
-  <div class="quiz">
-    <h3>Check yourself</h3>
-    <div class="q" data-q="mostWarning">
-      <p>Which signal gave the most warning?</p>
-      <div class="opts"></div><div class="verdict" hidden></div>
-    </div>
-    <div class="q" data-q="negLead">
-      <p>A signal with a warning time of -15 days is one where</p>
-      <div class="opts"></div><div class="verdict" hidden></div>
-    </div>
-  </div>
+  <div class="quiz" id="quiz-a2"></div>
 </section>
 
 <section id="a3">
@@ -285,17 +292,7 @@
   <div id="a4-chart" class="chart"></div>
   <div id="a4-note"></div>
   <div class="scroller"><table id="a4-table"></table></div>
-  <div class="quiz">
-    <h3>Check yourself</h3>
-    <div class="q" data-q="raiseLevel">
-      <p>You raise the level from 1.5 to 3.0. What happens to your alarm?</p>
-      <div class="opts"></div><div class="verdict" hidden></div>
-    </div>
-    <div class="q" data-q="claimsDelay">
-      <p>Doctor visits won on this data. Why might you still not trust it in a real outbreak?</p>
-      <div class="opts"></div><div class="verdict" hidden></div>
-    </div>
-  </div>
+  <div class="quiz" id="quiz-a4"></div>
 </section>
 
 <section class="closing">
